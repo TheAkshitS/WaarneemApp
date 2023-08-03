@@ -5,6 +5,8 @@ export default {
   data() {
     return {
       vacancies: [],
+      isVacancyModalVisible: false,
+      selectedVacancy: {},
     }
   },
 
@@ -27,6 +29,7 @@ export default {
       try {
         await this.deleteVacancyFromStore(id)
         await this.mapVacancies()
+
         this.$buefy.toast.open({
           message: 'Vacancy deleted successfully.',
           position: 'is-bottom',
@@ -34,6 +37,7 @@ export default {
         })
       } catch (error) {
         console.error(error)
+
         this.$buefy.toast.open({
           message: 'Error while deleting Vacancy!',
           position: 'is-bottom',
@@ -42,7 +46,27 @@ export default {
       }
     },
 
-    openVacancyModal(id) {},
+    openVacancyModal(id) {
+      if (id) {
+        // UPDATE flow
+        this.selectedVacancy = [...this.vacancies].find(
+          (vacancy) => vacancy.id === id
+        )
+      }
+
+      this.isVacancyModalVisible = true
+    },
+
+    closeVacancyModal() {
+      this.mapVacancies()
+
+      this.resetVacancyModal()
+    },
+
+    resetVacancyModal() {
+      this.selectedVacancy = {}
+      this.isVacancyModalVisible = false
+    },
 
     updateShiftTime(shiftTime) {
       this.filterVacanciesByPrice(
@@ -95,6 +119,12 @@ export default {
         </div>
       </div>
     </template>
+
+    <VacancyModal
+      v-if="isVacancyModalVisible"
+      :selected-vacancy="selectedVacancy"
+      @close="closeVacancyModal"
+    />
   </main>
 </template>
 
