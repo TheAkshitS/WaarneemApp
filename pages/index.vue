@@ -24,10 +24,25 @@ export default {
     },
 
     async deleteVacancy(id) {
+      try {
+        await this.deleteVacancyFromStore(id)
+        await this.mapVacancies()
+        this.$buefy.toast.open({
+          message: 'Vacancy deleted successfully.',
+          position: 'is-bottom',
+          type: 'is-success',
+        })
+      } catch (error) {
+        console.error(error)
+        this.$buefy.toast.open({
+          message: 'Error while deleting Vacancy!',
+          position: 'is-bottom',
+          type: 'is-error',
+        })
+      }
     },
 
-    openVacancyModal(id) {
-    },
+    openVacancyModal(id) {},
 
     updateShiftTime(shiftTime) {
       this.filterVacanciesByPrice(
