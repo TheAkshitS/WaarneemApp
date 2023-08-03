@@ -13,16 +13,34 @@ export default {
   },
 
   mounted() {
-    this.vacancies = [...this.vacanciesFromStore]
+    this.mapVacancies()
   },
 
   methods: {
     ...mapActions({ deleteVacancyFromStore: 'vacancy/deleteVacancy' }),
 
+    mapVacancies() {
+      this.vacancies = [...this.vacanciesFromStore]
+    },
+
     async deleteVacancy(id) {
     },
 
     openVacancyModal(id) {
+    },
+
+    updateShiftTime(shiftTime) {
+      this.filterVacanciesByPrice(
+        this.vacanciesFromStore,
+        shiftTime[0],
+        shiftTime[1]
+      )
+    },
+
+    filterVacanciesByPrice(vacancies, minPrice, maxPrice) {
+      this.vacancies = vacancies.filter((vacancy) => {
+        return vacancy.totalPrice >= minPrice && vacancy.totalPrice <= maxPrice
+      })
     },
   },
 }
@@ -30,6 +48,8 @@ export default {
 
 <template>
   <main class="container">
+    <VacancyFilter class="mt-4" @updateShiftTime="updateShiftTime" />
+
     <div class="column mt-3">
       <div class="columns">
         <div class="column is-10">
