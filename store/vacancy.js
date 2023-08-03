@@ -4,7 +4,7 @@ export const state = () => ({
       id: '428ec6dc-0f07-4973-bde6-39fa29ad2d34',
       title: 'Vacancy 1',
       description: 'description 1',
-      totalPrice: 150,
+      totalPrice: 70,
       shifts: [
         {
           id: 'ab8cbe69-fb6e-4cac-9455-5d78d6f20efc',
@@ -19,7 +19,7 @@ export const state = () => ({
           date: new Date(),
           startTime: new Date(),
           endTime: new Date(),
-          price: 50,
+          price: 60,
           type: '2',
         },
       ],
@@ -28,7 +28,7 @@ export const state = () => ({
       id: 'e778bd8f-2aeb-4b3a-8a20-b89ce3a6469b',
       title: 'Vacancy 2',
       description: 'description 2',
-      totalPrice: 160,
+      totalPrice: 300,
       shifts: [
         {
           id: '35a7545d-d267-4c6d-9685-588ced0ef3b6',
@@ -43,13 +43,35 @@ export const state = () => ({
           date: new Date(),
           startTime: new Date(),
           endTime: new Date(),
-          price: 70,
+          price: 210,
           type: '1',
         },
       ],
     },
   ],
 })
+
+export const getters = {
+  maxShiftPrice (state) {
+    return state.vacancies.reduce((max, vacancy) => {
+      const vacancyMaxPrice = vacancy.shifts.reduce(
+        (max, shift) => Math.max(max, shift.price),
+        -Infinity
+      )
+      return Math.max(max, vacancyMaxPrice)
+    }, -Infinity)
+  },
+
+  minShiftPrice (state) {
+    return state.vacancies.reduce((min, vacancy) => {
+      const vacancyMinPrice = vacancy.shifts.reduce(
+        (min, shift) => Math.min(min, shift.price),
+        Infinity
+      )
+      return Math.min(min, vacancyMinPrice)
+    }, Infinity)
+  },
+}
 
 export const mutations = {
   createVacancy (state, value) {
