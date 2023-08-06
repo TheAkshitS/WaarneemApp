@@ -31,7 +31,7 @@ export default {
 
   methods: {
     sliderChanged() {
-      this.$emit('updateShiftTime', [...this.sliderValues])
+      this.$emit('updateShift', [...this.sliderValues])
     },
 
     setSliderValues() {

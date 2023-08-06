@@ -1,11 +1,11 @@
 <script>
-import { mapActions } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   props: {
-    selectedVacancy: {
-      type: Object,
-      default: () => {},
+    selectedVacancyId: {
+      type: String,
+      default: '',
     },
   },
 
@@ -23,41 +23,33 @@ export default {
   },
 
   computed: {
+    ...mapGetters({
+      getVacancyById: 'vacancy/getVacancyById',
+    }),
+
+    selectedVacancy() {
+      return this.getVacancyById(this.selectedVacancyId)
+    },
+
     isEdit() {
-      return !!this.selectedVacancy
+      return !!this.selectedVacancyId
     },
 
     isSubmitDisabled() {
-      return !this.shiftTimes.length || !this.form.title
+      return false
+      // return !this.shiftTimes.length || !this.form.title
     },
   },
 
-  // TODO: delete if not required
-  // watch: {
-  //   'form.shifts'(newValue, oldValue) {
-  //     if (oldValue.length < newValue.length) {
-  //       this.createShiftTime()
-  //     } else {
-  //       // Fix delete of date
-  //       const removedDateIndex = oldValue.findIndex(
-  //         (date) => date.id === newValue[newValue.length - 1].id
-  //       )
-  //       this.shiftTimes.splice(removedDateIndex, 1)
-  //     }
-  //   },
-  // },
-
   mounted() {
     if (this.isEdit) {
+      // UPDATE FLOW -> map values
       this.shiftTimes = this.selectedVacancy.shifts
       this.form.id = this.selectedVacancy.id
       this.form.title = this.selectedVacancy.title
       this.form.description = this.selectedVacancy.description
 
-      // TODO: fix mapping
-      // this.form.shifts = [...this.shifts].map((shift) => shift.date)
-
-      // this.form = {...this.selectedVacancy}
+      this.form.shifts = [...this.shiftTimes].map((shift) => shift.date)
     }
   },
 
@@ -68,23 +60,41 @@ export default {
     }),
 
     async submit() {
-      try {
-        const payload = {
-          ...this.form,
-          ...{
-            totalPrice: this.shiftTimes.reduce(
-              (acc, shift) => acc + shift.price,
-              0
-            ),
-          },
-          ...{ shifts: this.shiftTimes },
-        }
+      const payload = {
+        ...this.form,
+        ...{
+          totalPrice: this.shiftTimes.reduce(
+            (acc, shift) => acc + shift.price,
+            0
+          ),
+        },
+        ...{ shifts: this.shiftTimes },
+      }
 
-        if (this.isEdit) {
-          // UPDATE FLOW
-          await this.updateVacancy(payload.id, payload)
-        } else {
-          // CREATE FLOW
+      if (this.isEdit) {
+        // UPDATE FLOW
+        try {
+          await this.updateVacancy({ id: payload.id, value: payload })
+
+          this.$emit('close')
+
+          this.$buefy.toast.open({
+            message: 'Vacancy updated successfully.',
+            position: 'is-bottom',
+            type: 'is-success',
+          })
+        } catch (error) {
+          console.error(error)
+
+          this.$buefy.toast.open({
+            message: 'Error while updating Vacancy!',
+            position: 'is-bottom',
+            type: 'is-error',
+          })
+        }
+      } else {
+        // CREATE FLOW
+        try {
           await this.createVacancy(payload)
 
           this.$emit('close')
@@ -94,33 +104,29 @@ export default {
             position: 'is-bottom',
             type: 'is-success',
           })
-        }
-      } catch (error) {
-        console.error(error)
+        } catch (error) {
+          console.error(error)
 
-        this.$buefy.toast.open({
-          message: 'Error while creating Vacancy!',
-          position: 'is-bottom',
-          type: 'is-error',
-        })
+          this.$buefy.toast.open({
+            message: 'Error while creating Vacancy!',
+            position: 'is-bottom',
+            type: 'is-error',
+          })
+        }
       }
     },
 
-    createShiftTime() {
-      this.shiftTimes.push({
-        startTime: null,
-        endTime: null,
-        price: null,
-        type: null,
-      })
+    updateShift(index, value) {
+      this.shiftTimes[index] = value
     },
 
-    updateShiftTime(index, value) {
-      this.shiftTimes.splice(index, 1, value)
-    },
-
-    deleteShiftTime(value) {
-      this.form.shifts.splice(value, 1)
+    deleteShiftTime(index) {
+      this.form.shifts = [...this.form.shifts].filter(
+        (data, idx) => idx !== index
+      )
+      this.shiftTimes = [...this.shiftTimes].filter(
+        (data, idx) => idx !== index
+      )
     },
   },
 }
@@ -168,8 +174,9 @@ export default {
             <ShiftTimeCard
               v-for="(date, i) in form.shifts"
               :key="i"
-              :shift-date="isEdit ? date.date : date"
-              @updateShiftTime="updateShiftTime(i, $event)"
+              :shift-date="date"
+              :shift-data.sync="shiftTimes[i]"
+              @updateShift="updateShift(i, $event)"
               @deleteShiftTime="deleteShiftTime(i)"
             />
           </template>

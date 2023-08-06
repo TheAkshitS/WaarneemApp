@@ -6,7 +6,7 @@ export default {
     return {
       vacancies: [],
       isVacancyModalVisible: false,
-      selectedVacancy: {},
+      selectedVacancyId: "",
     }
   },
 
@@ -21,8 +21,10 @@ export default {
   methods: {
     ...mapActions({ deleteVacancyFromStore: 'vacancy/deleteVacancy' }),
 
-    mapVacancies() {
-      this.vacancies = [...this.vacanciesFromStore]
+    async mapVacancies() {
+      // hack, for re-rendering the child component
+      this.vacancies = await [];
+      this.vacancies = await this.vacanciesFromStore
     },
 
     async deleteVacancy(id) {
@@ -49,9 +51,9 @@ export default {
     openVacancyModal(id) {
       if (id) {
         // UPDATE flow
-        this.selectedVacancy = [...this.vacancies].find(
+        this.selectedVacancyId = [...this.vacancies].find(
           (vacancy) => vacancy.id === id
-        )
+        ).id
       }
 
       this.isVacancyModalVisible = true
@@ -64,11 +66,11 @@ export default {
     },
 
     resetVacancyModal() {
-      this.selectedVacancy = {}
+      this.selectedVacancyId = ""
       this.isVacancyModalVisible = false
     },
 
-    updateShiftTime(shiftTime) {
+    updateShift(shiftTime) {
       this.filterVacanciesByPrice(
         this.vacanciesFromStore,
         shiftTime[0],
@@ -87,7 +89,7 @@ export default {
 
 <template>
   <main class="container">
-    <VacancyFilter class="mt-4" @updateShiftTime="updateShiftTime" />
+    <VacancyFilter class="mt-4" @updateShift="updateShift" />
 
     <div class="column mt-3">
       <div class="columns">
@@ -95,7 +97,7 @@ export default {
           <h1 class="title">Vacancies</h1>
         </div>
         <div class="column">
-          <b-button type="is-primary btn-add" @click="openVacancyModal"
+          <b-button type="is-primary btn-add" @click="openVacancyModal('')"
             >Add Vacancy</b-button
           >
         </div>
@@ -122,7 +124,7 @@ export default {
 
     <VacancyModal
       v-if="isVacancyModalVisible"
-      :selected-vacancy="selectedVacancy"
+      :selected-vacancy-id="selectedVacancyId"
       @close="closeVacancyModal"
     />
   </main>
