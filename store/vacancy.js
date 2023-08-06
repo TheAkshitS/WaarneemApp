@@ -71,6 +71,10 @@ export const getters = {
       return Math.min(min, vacancyMinPrice)
     }, Infinity)
   },
+
+  getVacancyById: (state) => (id) => {
+    return state.vacancies.find((vacancy) => vacancy.id === id)
+  }
 }
 
 export const mutations = {
@@ -78,7 +82,7 @@ export const mutations = {
     state.vacancies.push(value)
   },
 
-  updateVacancy (state, id, value) {
+  updateVacancy (state, { id, value }) {
     state.vacancies = state.vacancies.map((vacancy) => {
       if (vacancy.id === id) {
         return value
@@ -99,8 +103,8 @@ export const actions = {
     return value
   },
 
-  async updateVacancy ({ commit }, id, value) {
-    await commit('updateVacancy', id, value)
+  async updateVacancy ({ commit }, { id, value }) {
+    await commit('updateVacancy', { id, value })
 
     return id
   },
